@@ -67,26 +67,26 @@ def train_and_test():
 
     train_loader = DataLoader(train_set, batch_size=100)
     test_loader = DataLoader(test_set, batch_size=100)
-    
+
     # TODO: Transfering model to GPU if available
     model = FashionCNN()
     model = ...
-    
+
     error = nn.CrossEntropyLoss()
-    
+
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     print(model)
-    
+
     num_epochs = 20
     # Lists for visualization of loss and accuracy 
     loss_list = []
     iteration_list = []
     accuracy_list = []
-    
+
     # Lists for knowing classwise accuracy
     predictions_list = []
     labels_list = []
-    
+
     for epoch in range(num_epochs):
         for batch_idx, (images, labels) in enumerate(train_loader):
             # TODO: Transfering images and labels to GPU if available
@@ -95,58 +95,58 @@ def train_and_test():
             # Forward pass 
             outputs = model(images)
             loss = error(outputs, labels)
-            
+
             # Initializing a gradient as 0 so there is no mixing of gradient among the batches
             optimizer.zero_grad()
-            
+
             #Propagating the error backward
             loss.backward()
-            
+
             # Optimizing the parameters
             optimizer.step()
-                
+
             # Testing the model
             count = epoch * len(train_loader) + batch_idx
             if not (count % 50):    # It's same as "if count % 50 == 0"
                 total = 0
                 correct = 0
-            
+
                 for images, labels in test_loader:
                     # TODO: Transfering images and labels to GPU if available
                     images, labels = ...
                     labels_list.append(labels)
-                
+
                     outputs = model(images)
-                
+
                     predictions = torch.max(outputs, 1)[1].to(device)
                     predictions_list.append(predictions)
                     correct += (predictions == labels).sum()
-                
+
                     total += len(labels)
-                
+
                 accuracy = correct * 100 / total
                 loss_list.append(loss.data)
                 iteration_list.append(count)
                 accuracy_list.append(accuracy)
-            
+
             if not (count % 500):
-                print("Iteration: {}, Loss: {}, Accuracy: {}%".format(count, loss.data, accuracy))
-                
+                print(f"Iteration: {count}, Loss: {loss.data}, Accuracy: {accuracy}%")
+
     class_correct = [0. for _ in range(10)]
     total_correct = [0. for _ in range(10)]
-    
+
     with torch.no_grad():
         for images, labels in test_loader:
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
             predicted = torch.max(outputs, 1)[1]
             c = (predicted == labels).squeeze()
-            
+
             for i in range(100):
                 label = labels[i]
                 class_correct[label] += c[i].item()
                 total_correct[label] += 1
-            
+
     for i in range(10):
         print("Accuracy of {}: {:.2f}%".format(output_label(i), class_correct[i] * 100 / total_correct[i]))
         
